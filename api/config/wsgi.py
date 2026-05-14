@@ -13,4 +13,7 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
+from config.logging_setup import setup_loguru_sink
+setup_loguru_sink(os.environ.get("LOG_LEVEL", "INFO"))
+
 application = get_wsgi_application()
