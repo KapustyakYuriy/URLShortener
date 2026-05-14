@@ -1,0 +1,13 @@
+Django==6.0.5
+djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
+
+psycopg[binary]==3.2.3
+redis==6.1.1
+
+django-debug-toolbar==6.3.0
+loguru==0.7.3
+
+pytest==9.0.3
+pytest-django==4.9.0
+fakeredis==2.31.0
