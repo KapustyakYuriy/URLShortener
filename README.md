@@ -1,6 +1,7 @@
 # URLShortener
 
 ## Project architecture
+```
 URLShortener/
 │
 ├── api/
@@ -22,3 +23,4 @@ URLShortener/
 ├── .gitignore
 ├── docker-compose.yml
 └── README.md
+```
