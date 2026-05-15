@@ -60,6 +60,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -102,6 +103,7 @@ DATABASES = {
         "CONN_MAX_AGE": 60,
     }
 }
+
 
 # Redis
 REDIS_HOST = os.environ["REDIS_HOST"]
@@ -222,3 +224,6 @@ if ENABLE_DEBUG_TOOLBAR:
     MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE
     INTERNAL_IPS = ["127.0.0.1"]
     DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": lambda request: True}
+
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
