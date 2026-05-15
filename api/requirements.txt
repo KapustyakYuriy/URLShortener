@@ -11,3 +11,5 @@ loguru==0.7.3
 pytest==9.0.3
 pytest-django==4.9.0
 fakeredis==2.31.0
+
+gunicorn==23.0.0
