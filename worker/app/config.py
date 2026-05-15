@@ -1,0 +1,10 @@
+import os
+
+REDIS_HOST = os.getenv('REDIS_HOST')
+REDIS_PORT = int(os.getenv('REDIS_PORT'))
+REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+
+CLICKS_RAW_CHANNEL = os.getenv('CLICKS_RAW_CHANNEL')
+CLICKS_ENRICHED_CHANNEL = os.getenv('CLICKS_ENRICHED_CHANNEL')
+
+LOG_LEVEL = os.getenv('LOG_LEVEL')
