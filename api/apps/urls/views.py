@@ -1,7 +1,7 @@
 import json
 import redis
 from datetime import datetime, timezone
-from django.db.models import Count, QuerySet
+from django.db.models import Count, QuerySet, Prefetch
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.conf import settings
@@ -11,9 +11,10 @@ from rest_framework.serializers import BaseSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 
-from apps.urls.serializers import ShortURLSerializer
+from apps.urls.serializers import ShortURLSerializer, ShortURLDetailSerializer
 from apps.urls.models import ShortURL
 from apps.urls.utils import generate_short_code
+from apps.analytics.models import ClickEvent
 
 class IsOwner(BasePermission):
 	def has_object_permission(self, request, view, obj):
@@ -23,10 +24,25 @@ class ShortURLViewSet(ModelViewSet):
 	serializer_class = ShortURLSerializer
 	permission_classes = [IsAuthenticated, IsOwner]
 
+	def get_serializer_class(self):
+		if self.action == "retrieve":
+			return ShortURLDetailSerializer
+		return ShortURLSerializer
+
 	def get_queryset(self)->QuerySet:
 		if self.action == "list":
 			return ShortURL.objects.filter(owner=self.request.user).annotate(
 				click_count=Count("clickevent")
+			)
+		if self.action == "retrieve":
+			return ShortURL.objects.annotate(
+				click_count=Count("clickevent")
+			).prefetch_related(
+				Prefetch(
+					"clickevent_set",
+					queryset=ClickEvent.objects.order_by("-clicked_at"),
+					to_attr="prefetched_clicks",
+				)
 			)
 		return ShortURL.objects.all().annotate(
 			click_count=Count("clickevent")
