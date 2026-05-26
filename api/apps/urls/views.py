@@ -9,17 +9,26 @@ from rest_framework.request import Request
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.serializers import BaseSerializer
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 
 from apps.urls.serializers import ShortURLSerializer
 from apps.urls.models import ShortURL
 from apps.urls.utils import generate_short_code
 
+class IsOwner(BasePermission):
+	def has_object_permission(self, request, view, obj):
+		return obj.owner == request.user
+
 class ShortURLViewSet(ModelViewSet):
 	serializer_class = ShortURLSerializer
+	permission_classes = [IsAuthenticated, IsOwner]
 
 	def get_queryset(self)->QuerySet:
-		return ShortURL.objects.filter(owner=self.request.user).annotate(
+		if self.action == "list":
+			return ShortURL.objects.filter(owner=self.request.user).annotate(
+				click_count=Count("clickevent")
+			)
+		return ShortURL.objects.all().annotate(
 			click_count=Count("clickevent")
 		)
 
