@@ -1,15 +1,19 @@
 import json
 import redis
-from datetime import datetime, timezone
+from datetime import timedelta
 from django.db.models import Count, QuerySet, Prefetch
+from django.db.models.functions import TruncDate
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.utils import timezone
 from rest_framework.request import Request
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.serializers import BaseSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from apps.urls.serializers import ShortURLSerializer, ShortURLDetailSerializer
 from apps.urls.models import ShortURL
@@ -53,6 +57,39 @@ class ShortURLViewSet(ModelViewSet):
 			owner=self.request.user,
 			short_code=generate_short_code(),
 		)
+	
+	@action(detail=True, methods=["get"])
+	def stats(self, request: Request, pk=None)->Response:
+		url = self.get_object()
+		clicks = ClickEvent.objects.filter(short_url=url)
+		total_clicks = clicks.count()
+
+		since = (timezone.now() - timedelta(days=29)).date()
+		today = timezone.now().date()
+
+		clicks_by_day = {
+			row["date"]: row["count"]
+			for row in clicks.filter(clicked_at__date__gte=since)
+			.annotate(date=TruncDate("clicked_at"))
+			.values("date")
+			.annotate(count=Count("id"))
+		}
+
+		current = since
+		clicks_per_day = []
+		while current <= today:
+			clicks_per_day.append({"date": current, "count": clicks_by_day.get(current, 0)})
+			current += timedelta(days=1)
+
+		top_browsers = list(clicks.values("browser").annotate(count=Count("id")).order_by("-count")[:5])
+		top_os = list(clicks.values("os").annotate(count=Count("id")).order_by("-count")[:5])
+		
+		return Response({
+			"total_clicks": total_clicks,
+			"clicks_per_day": clicks_per_day,
+			"top_browsers": top_browsers,
+			"top_os": top_os,
+		})
 
 class RedirectView(APIView):
 	permission_classes = [AllowAny]
@@ -65,7 +102,7 @@ class RedirectView(APIView):
 			"short_code": short_code,
 			"ip_address": request.META.get("REMOTE_ADDR"),
 			"user_agent": request.META.get("HTTP_USER_AGENT", ""),
-			"clicked_at": datetime.now(timezone.utc).isoformat(),
+			"clicked_at": timezone.now().isoformat(),
 		})
 		r.publish(settings.CLICKS_RAW_CHANNEL, payload)
 		r.close()
