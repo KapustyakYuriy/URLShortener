@@ -50,7 +50,7 @@ class ShortURLViewSet(ModelViewSet):
 			)
 		return ShortURL.objects.all().annotate(
 			click_count=Count("clickevent")
-		)
+		).order_by("-created_at")
 
 	def perform_create(self, serializer: BaseSerializer)->None:
 		serializer.save(
@@ -90,6 +90,25 @@ class ShortURLViewSet(ModelViewSet):
 			"top_browsers": top_browsers,
 			"top_os": top_os,
 		})
+
+	@action(detail=False, methods=["get"])
+	def summary(self, request: Request)->Response:
+		urls = ShortURL.objects.filter(owner=request.user)
+		total_urls = urls.count()
+		total_clicks = ClickEvent.objects.filter(short_url__owner=request.user).count()
+
+		top_urls = list(
+			urls.annotate(click_count=Count("clickevent"))
+			.order_by("-click_count")[:5]
+			.values("id", "short_code", "original_url", "click_count")
+		)
+
+		return Response({
+			"total_urls": total_urls,
+			"total_clicks": total_clicks,
+			"top_urls": top_urls,
+		})
+
 
 class RedirectView(APIView):
 	permission_classes = [AllowAny]
