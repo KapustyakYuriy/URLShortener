@@ -1,3 +1,5 @@
+from loguru import logger
+
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -36,6 +38,7 @@ class RegisterView(APIView):
 			)
 		
 		user = User.objects.create_user(username=username, password=password)
+		logger.info("user registered | username={}", username)
 		refresh = RefreshToken.for_user(user)
 		return Response(
 			{
