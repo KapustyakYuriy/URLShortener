@@ -1,5 +1,6 @@
 import json
 import redis
+from loguru import logger
 from datetime import timedelta
 from django.db.models import Count, QuerySet, Prefetch
 from django.db.models.functions import TruncDate
@@ -126,4 +127,5 @@ class RedirectView(APIView):
 		r.publish(settings.CLICKS_RAW_CHANNEL, payload)
 		r.close()
 
+		logger.info("redirect | short_code={} ip={}", short_code, request.META.get("REMOTE_ADDR"))
 		return HttpResponseRedirect(url.original_url)
