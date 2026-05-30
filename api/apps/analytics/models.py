@@ -1,5 +1,6 @@
 from django.db import models
 from apps.urls.models import ShortURL
+from django.utils import timezone
 
 # Create your models here.
 class ClickEvent(models.Model):
@@ -8,7 +9,7 @@ class ClickEvent(models.Model):
 		on_delete=models.CASCADE
 	)
 	clicked_at = models.DateTimeField(
-		auto_now_add=True,
+		default=timezone.now,
 		db_index=True
 	)
 	ip_address = models.CharField(
