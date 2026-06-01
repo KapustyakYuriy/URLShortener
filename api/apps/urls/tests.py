@@ -29,3 +29,13 @@ class TestShort:
 		response = other_user_client.delete(f"/api/urls/{short_url.id}/")
 		assert response.status_code == 403
 	
+@pytest.mark.django_db
+class TestRedirect:
+	def test_redirect(self, api_client, short_url):
+		response = api_client.get(f"/{short_url.short_code}/")
+		assert response.status_code == 302
+		assert response["Location"] == short_url.original_url
+
+	def test_invalid_code(self, api_client):
+		response = api_client.get("/invalidcode/")
+		assert response.status_code == 404
