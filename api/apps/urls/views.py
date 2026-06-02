@@ -38,7 +38,7 @@ class ShortURLViewSet(ModelViewSet):
 		if self.action == "list":
 			return ShortURL.objects.filter(owner=self.request.user).annotate(
 				click_count=Count("clickevent")
-			)
+			).order_by("-created_at")
 		if self.action == "retrieve":
 			return ShortURL.objects.annotate(
 				click_count=Count("clickevent")
