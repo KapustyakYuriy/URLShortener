@@ -40,7 +40,7 @@ class ShortURLViewSet(ModelViewSet):
 				click_count=Count("clickevent")
 			).order_by("-created_at")
 		if self.action == "retrieve":
-			return ShortURL.objects.annotate(
+			return ShortURL.objects.filter(owner=self.request.user).annotate(
 				click_count=Count("clickevent")
 			).prefetch_related(
 				Prefetch(
@@ -49,7 +49,7 @@ class ShortURLViewSet(ModelViewSet):
 					to_attr="prefetched_clicks",
 				)
 			)
-		return ShortURL.objects.all().annotate(
+		return ShortURL.objects.filter(owner=self.request.user).annotate(
 			click_count=Count("clickevent")
 		).order_by("-created_at")
 
