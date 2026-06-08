@@ -33,7 +33,7 @@ class TestShort:
 		other = User.objects.create_user(username="other", password="pass123456")
 		other_user_client.force_authenticate(user=other)
 		response = other_user_client.delete(f"/api/urls/{short_url.id}/")
-		assert response.status_code == 403
+		assert response.status_code == 404
 	
 @pytest.mark.django_db
 class TestRedirect:
