@@ -18,6 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from apps.urls.views import RedirectView, ShortURLViewSet
+from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -26,3 +27,7 @@ urlpatterns = [
     path("<str:short_code>/", RedirectView.as_view()),
     path("api/stats/summary/", ShortURLViewSet.as_view({"get": "summary"})),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
