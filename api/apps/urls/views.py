@@ -92,7 +92,6 @@ class ShortURLViewSet(ModelViewSet):
 			"top_os": top_os,
 		})
 
-	@action(detail=False, methods=["get"])
 	def summary(self, request: Request)->Response:
 		urls = ShortURL.objects.filter(owner=request.user)
 		total_urls = urls.count()
